@@ -2,6 +2,8 @@
 
 **Premium QR Code Master**는 별도의 설치 없이 브라우저에서 바로 사용할 수 있는 올인원 QR 코드 생성 및 스캔 도구입니다. 최신 웹 트렌드인 **Glassmorphism(글래스모피즘)** 디자인을 적용하여 심미적으로 우수하며, 다크 모드와 라이트 모드를 모두 지원합니다.
 
+> 🚀 **[실행 가능한 데모 사이트 바로가기](https://happyretire.github.io/PremiumQRCodeGenerator/)**
+
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white)
