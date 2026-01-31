@@ -1,22 +1,53 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium QR Code Generator</title>
+    <title>Premium QR Code Master</title>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
-    <!-- QRCode.js Library -->
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- QRCode.js Library (For Generation) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- jsQR Library (For Scanning) -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <style>
         :root {
+            /* Dark Theme (Default) */
+            --bg-gradient: linear-gradient(to right, #24243e, #302b63, #0f0c29);
             --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             --glass-bg: rgba(255, 255, 255, 0.1);
             --glass-border: rgba(255, 255, 255, 0.2);
-            --text-color: #ffffff;
+            --text-main: #ffffff;
+            --text-sub: rgba(255, 255, 255, 0.7);
             --input-bg: rgba(255, 255, 255, 0.05);
+            --tab-bg: rgba(0, 0, 0, 0.2);
+            --tab-active: rgba(255, 255, 255, 0.1);
+            --blob-1: #764ba2;
+            --blob-2: #667eea;
+            --shadow-color: rgba(31, 38, 135, 0.37);
+        }
+
+        body.light-theme {
+            /* Light Theme */
+            --bg-gradient: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.8);
+            --text-main: #2d3748;
+            --text-sub: #718096;
+            --input-bg: rgba(255, 255, 255, 0.6);
+            --tab-bg: rgba(0, 0, 0, 0.05);
+            --tab-active: #ffffff;
+            --blob-1: #c4b5fd;
+            /* Soft Purple */
+            --blob-2: #a5b4fc;
+            /* Soft Blue */
+            --shadow-color: rgba(0, 0, 0, 0.1);
         }
 
         * {
@@ -24,94 +55,222 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Outfit', sans-serif;
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
         }
 
         body {
             background: #0f0c29;
-            background: linear-gradient(to right, #24243e, #302b63, #0f0c29);
+            background: var(--bg-gradient);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            color: var(--text-color);
+            color: var(--text-main);
             overflow: hidden;
             position: relative;
         }
 
-        /* Decorative background blobs */
         .blob {
             position: absolute;
             border-radius: 50%;
             filter: blur(80px);
             z-index: 0;
             opacity: 0.6;
+            transition: background 0.5s ease;
         }
-        .blob-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: #764ba2; }
-        .blob-2 { bottom: -10%; right: -10%; width: 400px; height: 400px; background: #667eea; }
+
+        .blob-1 {
+            top: -10%;
+            left: -10%;
+            width: 500px;
+            height: 500px;
+            background: var(--blob-1);
+        }
+
+        .blob-2 {
+            bottom: -10%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: var(--blob-2);
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px var(--shadow-color);
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
 
         .container {
             position: relative;
             z-index: 1;
-            width: 100%;
-            max-width: 400px;
+            width: 90%;
+            max-width: 420px;
             padding: 40px;
             background: var(--glass-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
             border-radius: 24px;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            box-shadow: 0 8px 32px 0 var(--shadow-color);
             text-align: center;
-            transition: transform 0.3s ease;
-        }
-
-        .container:hover {
-            transform: translateY(-5px);
+            transition: transform 0.3s ease, background 0.3s ease;
         }
 
         h1 {
             font-size: 2rem;
             font-weight: 600;
-            margin-bottom: 10px;
-            background: linear-gradient(to right, #fff, #a5b4fc);
+            margin-bottom: 20px;
+            /* Gradient text for both modes */
+            background: linear-gradient(135deg, #667eea, #764ba2);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
-        p.subtitle {
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.7);
+        /* In light mode, the gradient text needs to be darker or just solid if gradient is too light. 
+           But the purple gradient #667eea is readable on white. Kept as is. */
+
+        /* Tabs */
+        .tabs {
+            display: flex;
             margin-bottom: 30px;
+            background: var(--tab-bg);
+            border-radius: 12px;
+            padding: 4px;
         }
 
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            color: var(--text-sub);
+            font-size: 0.95rem;
+            cursor: pointer;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: var(--tab-active);
+            color: var(--text-main);
+            font-weight: 600;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Content Sections */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Inputs & Buttons */
         .input-group {
-            position: relative;
             margin-bottom: 25px;
+            position: relative;
         }
 
-        input {
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-sub);
+            width: 20px;
+            height: 20px;
+        }
+
+        input[type="text"] {
             width: 100%;
-            padding: 15px 20px;
+            padding: 15px 20px 15px 50px;
+            /* Left padding for icon */
             border-radius: 12px;
             border: 1px solid var(--glass-border);
             background: var(--input-bg);
-            color: white;
+            color: var(--text-main);
             font-size: 1rem;
             outline: none;
             transition: all 0.3s ease;
         }
 
-        input:focus {
+        input[type="text"]::placeholder {
+            color: var(--text-sub);
+            opacity: 0.7;
+        }
+
+        input[type="text"]:focus {
             border-color: #667eea;
-            background: rgba(255, 255, 255, 0.1);
-            box-shadow: 0 0 15px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
         }
 
-        input::placeholder {
-            color: rgba(255, 255, 255, 0.4);
+        input[type="file"] {
+            display: none;
         }
 
-        button {
+        .file-upload-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 140px;
+            border: 2px dashed var(--glass-border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-sub);
+            margin-bottom: 25px;
+            background: var(--input-bg);
+        }
+
+        .file-upload-label:hover {
+            border-color: #a5b4fc;
+            background: rgba(102, 126, 234, 0.05);
+            color: #667eea;
+        }
+
+        .btn-main {
             width: 100%;
             padding: 15px;
             border: none;
@@ -123,86 +282,244 @@
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
-        button:hover {
+        .btn-main:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(118, 75, 162, 0.4);
+            box-shadow: 0 6px 20px rgba(118, 75, 162, 0.3);
         }
 
-        button:active {
-            transform: translateY(1px);
-        }
-
+        /* Generator Results */
         #qr-container {
             margin-top: 30px;
             padding: 20px;
-            background: white; /* QR needs white background for contrast */
+            background: white;
             border-radius: 16px;
-            display: none; /* Hidden by default */
+            display: none;
             justify-content: center;
             align-items: center;
             width: fit-content;
             margin-left: auto;
             margin-right: auto;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
         #qr-container.show {
             display: flex;
-            opacity: 1;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        #qrcode img {
-            display: block; /* Remove slight gap */
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         .download-btn {
             margin-top: 20px;
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--glass-bg);
             border: 1px solid var(--glass-border);
             display: none;
             font-size: 0.9rem;
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: 0.3s;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
+
+        .download-btn.show {
+            display: flex;
+        }
+
+        /* Using flex for icon alignment */
 
         .download-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: var(--glass-border);
         }
 
-        /* Footer text */
-        .footer {
-            position: absolute;
-            bottom: 20px;
+        /* Scanner Results */
+        #scan-result {
+            margin-top: 20px;
+            padding: 15px;
+            background: var(--input-bg);
+            /* Use input bg instead of hardcoded dark */
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            display: none;
+            text-align: left;
+            word-break: break-all;
+        }
+
+        #scan-result.show {
+            display: block;
+        }
+
+        .result-label {
             font-size: 0.8rem;
-            opacity: 0.5;
+            color: #a5b4fc;
+            margin-bottom: 5px;
+            display: block;
+            font-weight: 600;
+        }
+
+        /* In light mode, make label darker purple */
+        body.light-theme .result-label {
+            color: #667eea;
+        }
+
+        .result-link {
+            color: #a5b4fc;
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            font-weight: bold;
+        }
+
+        body.light-theme .result-link {
+            color: #667eea;
+        }
+
+        .result-link:hover {
+            border-color: currentColor;
+        }
+
+        .result-text {
+            font-size: 1rem;
+            color: var(--text-main);
+        }
+
+        #canvas {
+            display: none;
+        }
+
+        .description {
+            color: var(--text-sub);
+            margin-bottom: 20px;
+            font-size: 0.9rem;
         }
     </style>
 </head>
+
 <body>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle Theme">
+        <i data-lucide="sun" id="theme-icon"></i>
+    </button>
 
     <div class="blob blob-1"></div>
     <div class="blob blob-2"></div>
 
     <div class="container">
-        <h1>QR Generator</h1>
-        <p class="subtitle">링크나 텍스트를 입력하여 QR코드를 만드세요</p>
+        <h1><i data-lucide="qr-code"></i> QR Master</h1>
 
-        <div class="input-group">
-            <input type="text" id="text-input" placeholder="https://example.com" autocomplete="off">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('generate')">
+                <i data-lucide="pen-tool" style="width: 16px;"></i> 생성하기
+            </button>
+            <button class="tab-btn" onclick="switchTab('scan')">
+                <i data-lucide="scan-line" style="width: 16px;"></i> 스캔하기
+            </button>
         </div>
 
-        <button onclick="generateQR()">QR코드 생성하기</button>
+        <!-- GENERATOR SECTION -->
+        <div id="tab-generate" class="tab-content active">
+            <p class="description">링크나 텍스트를 QR코드로 변환합니다</p>
 
-        <div id="qr-container">
-            <div id="qrcode"></div>
+            <div class="input-group">
+                <i data-lucide="link" class="input-icon"></i>
+                <input type="text" id="text-input" placeholder="https://example.com" autocomplete="off">
+            </div>
+
+            <button class="btn-main" onclick="generateQR()">
+                <i data-lucide="zap" style="width: 18px;"></i> QR코드 생성
+            </button>
+
+            <div id="qr-container">
+                <div id="qrcode"></div>
+            </div>
+
+            <button id="download-btn" class="download-btn" onclick="downloadQR()">
+                <i data-lucide="download" style="width: 16px;"></i> 이미지 다운로드
+            </button>
         </div>
 
-        <button id="download-btn" class="download-btn" onclick="downloadQR()">이미지 다운로드</button>
+        <!-- SCANNER SECTION -->
+        <div id="tab-scan" class="tab-content">
+            <p class="description">QR코드 이미지를 업로드하여 내용을 확인합니다</p>
+
+            <label for="file-input" class="file-upload-label" id="drop-zone">
+                <i data-lucide="image-plus" style="width: 48px; height: 48px; margin-bottom: 10px; opacity: 0.8;"></i>
+                <span>클릭 또는 드래그하여 업로드</span>
+            </label>
+            <input type="file" id="file-input" accept="image/*" onchange="handleFile(this.files)">
+
+            <div id="scan-result">
+                <span class="result-label">스캔 결과:</span>
+                <div id="result-content"></div>
+            </div>
+
+            <canvas id="canvas"></canvas>
+        </div>
     </div>
 
     <script>
+        // Init Icons
+        lucide.createIcons();
+
+        // --- Theme Logic ---
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.getElementById('theme-icon');
+
+            body.classList.toggle('light-theme');
+
+            if (body.classList.contains('light-theme')) {
+                icon.setAttribute('data-lucide', 'moon');
+                localStorage.setItem('theme', 'light');
+            } else {
+                icon.setAttribute('data-lucide', 'sun');
+                localStorage.setItem('theme', 'dark');
+            }
+            lucide.createIcons();
+        }
+
+        // Set initial theme
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'light') {
+            document.body.classList.add('light-theme');
+            document.getElementById('theme-icon').setAttribute('data-lucide', 'moon');
+            lucide.createIcons();
+        }
+
+        // --- Tab Switching ---
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+
+            // This time query by text content or index effectively
+            const buttons = document.querySelectorAll('.tab-btn');
+            if (tabName === 'generate') buttons[0].classList.add('active');
+            else buttons[1].classList.add('active');
+        }
+
+        // --- Generator Logic ---
         const qrContainer = document.getElementById('qr-container');
         const qrcodeDiv = document.getElementById('qrcode');
         const downloadBtn = document.getElementById('download-btn');
@@ -216,33 +533,29 @@
                 return;
             }
 
-            // Clear previous QR
             qrcodeDiv.innerHTML = "";
             qrContainer.classList.remove('show');
-            downloadBtn.style.display = 'none';
+            downloadBtn.classList.remove('show');
 
-            // Slight delay for animation effect
             setTimeout(() => {
                 qrCodeObj = new QRCode(qrcodeDiv, {
                     text: text,
                     width: 200,
                     height: 200,
-                    colorDark : "#000000",
-                    colorLight : "#ffffff",
-                    correctLevel : QRCode.CorrectLevel.H
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
                 });
-
                 qrContainer.classList.add('show');
-                downloadBtn.style.display = 'block';
+                downloadBtn.classList.add('show');
             }, 100);
         }
 
         function downloadQR() {
             const img = qrcodeDiv.querySelector('img');
             if (img) {
-                const url = img.src;
                 const link = document.createElement('a');
-                link.href = url;
+                link.href = img.src;
                 link.download = 'qrcode.png';
                 document.body.appendChild(link);
                 link.click();
@@ -250,12 +563,78 @@
             }
         }
 
-        // Allow Enter key to submit
         document.getElementById('text-input').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                generateQR();
-            }
+            if (e.key === 'Enter') generateQR();
         });
+
+        // --- Scanner Logic ---
+        const scanResult = document.getElementById('scan-result');
+        const resultContent = document.getElementById('result-content');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        function handleFile(files) {
+            if (files.length === 0) return;
+
+            const file = files[0];
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                const img = new Image();
+                img.onload = function () {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+                    if (code) {
+                        displayResult(code.data);
+                    } else {
+                        alert("QR 코드를 찾을 수 없습니다.");
+                        scanResult.classList.remove('show');
+                    }
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function displayResult(data) {
+            scanResult.classList.add('show');
+            const urlPattern = /^(http|https):\/\/[^ "]+$/;
+
+            if (urlPattern.test(data)) {
+                resultContent.innerHTML = `<a href="${data}" target="_blank" class="result-link">${data} <i data-lucide="external-link" style="width:14px; display:inline;"></i></a>`;
+                lucide.createIcons(); // Re-render icons for dynamic content
+            } else {
+                resultContent.innerHTML = `<p class="result-text">${data}</p>`;
+            }
+        }
+
+        // Drag and Drop
+        const dropZone = document.getElementById('drop-zone');
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#a5b4fc';
+            dropZone.style.backgroundColor = 'var(--tab-active)';
+        });
+
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--glass-border)';
+            dropZone.style.backgroundColor = 'var(--input-bg)';
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--glass-border)';
+            dropZone.style.backgroundColor = 'var(--input-bg)';
+            if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files);
+        });
+
     </script>
 </body>
+
 </html>
